@@ -11,7 +11,7 @@ const SECRET_KEY = "DANLEY-YAP-GALAN-MARCH-31-2004"
 
 
 app.use(cors({
-    origin: ["http://http://127.0.0.1:5500"]
+    origin: ["http://127.0.0.1:5500"]
 }))
 
 
@@ -21,16 +21,16 @@ app.use(express.json())
 let users = [
     {
         id: 1,
-        firstname: "admin",
-        lastname: "user",
+        firstName: "admin",
+        lastName: "user",
         email: "admin@example.com",
         password: "$2b$10$aPbnWecBMzkQdNlVoNRIouuFU3o/F6Klg4v1.FIEhb.VOE7q98XdC",
         role: "admin"
     },
     {
         id: 2,
-        firstname: "alice",
-        lastname: "go",
+        firstName: "alice",
+        lastName: "go",
         email: "user@email.com",
         password: "$2b$10$jg1uY57jx7pPMcyap0e6yeyb3HpkISic2RXQq1KCj73nUI.P.t23i",
         role: "user"
@@ -44,27 +44,33 @@ let users = [
 
 // REGISTER ROUTE
 app.post("/api/register", async (req, res) => {
-    const { username, password, role = "user" } = req.body
+    const { firstName, lastName, email, password, role = "user" } = req.body
 
-    if (!username || !password) {
-        return res.status(409).json({ error: "Username and Password required" })
+    if (!email || !password) {
+        return res.status(409).json({ error: "Email and Password required" })
     }
 
-    const user = users.find(u => u.username === username)
+    const user = users.find(u => u.email === email)
 
     if (user) {
         return res.status(409).json({ error: "User already exists!" })
     }
 
-    const hashPassword = bcrypt.hash(password, 10)
+    const hashPassword = await bcrypt.hash(password, 10)
     const newUser = {
         id: users.length + 1,
-        username,
+        firstName,
+        lastName,
+        email,
         password: hashPassword,
         role
     }
 
+
     users.push(newUser)
+
+    console.log("current all user")
+    console.log(users)
     return res.status(201).json({ message: "User Created Successfully!" })
 
 })
@@ -73,10 +79,10 @@ app.post("/api/register", async (req, res) => {
 
 // LOGIN ROUTE
 app.post("/api/login", async (req, res) => {
-    const { username, password } = req.body
+    const { email, password } = req.body
 
 
-    const user = users.find(u => u.username === username)
+    const user = users.find(u => u.email === email)
 
     if (!user || !await bcrypt.compare(password, user.password)) {
         return res.status(401).json({ error: "Invalid Credentials" })
@@ -90,7 +96,7 @@ app.post("/api/login", async (req, res) => {
     )
 
 
-    return res.status(200).json({ token, user: { username: user.username, role: user.role } })
+    return res.status(200).json({ token, user })
 
 })
 
@@ -155,6 +161,7 @@ function authorizeRole(role) {
 
 
 
+console.log(users)
 
 
 
