@@ -106,7 +106,21 @@ app.post("/api/login", async (req, res) => {
 
 // PROTECTED ROUTES
 app.get("/api/profile", authenticateToken, async (req, res) => {
-    res.json({ user: req.user })
+    const fullUser = users.find(u => u.id === req.user.id);
+
+    if (!fullUser) {
+        return res.status(404).json({ error: "User not found" });
+    }
+
+
+    const user = {
+        id: fullUser.id,
+        firstName: fullUser.firstName,
+        lastName: fullUser.lastName,
+        email: fullUser.email,
+        role: fullUser.role
+    }
+    res.json({ user });
 })
 
 
@@ -161,16 +175,10 @@ function authorizeRole(role) {
 
 
 
-console.log(users)
-
-
-
-
-
 
 app.listen(PORT, () => {
     console.log(`BACKEND RUNNING ON http://localhost:${PORT}`)
     console.log("_______Try loggging in with:_______")
-    console.log("   --Admin: USERNAME: admin,     PASSWORD: Admin123")
-    console.log("   --User:  USERNAME: alice,     PASSWORD: user123")
+    console.log("   --Admin: EMAIL: admin@example.com,     PASSWORD: admin123")
+    console.log("   --User:  EMAIL: user@email.com,     PASSWORD: user123")
 })
